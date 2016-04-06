@@ -60,18 +60,37 @@ var findPeaks = function(windguru_json) {
     if(wspd > PEAK_MIN && wspd > wspd_next && wspd > wspd_prev) {
       //console.log(windguru_json.fcst[3].WINDSPD[i]);
       peaksTime.push(i);
-      var temp = Math.round(windguru_json.fcst[3].TMP[i])+" °C";
-      var wind = Math.round(wspd)+" knots";
+      var temp = Math.round(windguru_json.fcst[3].TMP[i])+"°C";
+      var gust = Math.round(windguru_json.fcst[3].GUST[i]);
+      var wind = Math.round(wspd)+"–"+gust+" knots,";
       var weekday = WEEKDAYS[windguru_json.fcst[3].hr_weekday[i]];
       var time = windguru_json.fcst[3].hr_h[i] + ':00';
-      var rainstr = '';
-      if (windguru_json.fcst[3].APCP[i] > 0.2 && windguru_json.fcst[3].APCP[i] < 1.5) {
-        rainstr += windguru_json.fcst[3].APCP[i] + ' mm/3h';
-      }
-      arrow = arrowFromDirectionWindGuru(windguru_json.fcst[3].WINDDIR[i]);
-      console.log(weekday+" "+time+" — "+arrow+wind+" "+temp+" "+rainstr);
+      var percp = windguru_json.fcst[3].APCP[i];
+      var rainstr = rainStrFromPercipation(percp);
+      var arrow = arrowFromDirectionWindGuru(windguru_json.fcst[3].WINDDIR[i]);
+      var cloudStr = cloudStrFromCover(windguru_json.fcst[3].HCDC[i], windguru_json.fcst[3].MCDC[i], windguru_json.fcst[3].LCDC[i]);
+      console.log(weekday+" "+time+' '+arrow+' '+wind+" "+temp+rainstr+' '+cloudStr);
     }
   }
+}
+
+var rainStrFromPercipation = function(percipation) {
+  var rainstr = '';
+  if (percipation > 0.2 && percipation < 1.5) {
+    rainstr += ', '+percipation + ' mm/3h';
+  }
+  return rainstr;
+}
+
+var cloudStrFromCover = function(high, mid, low) {
+  var c = '';
+  var allclouds = high + mid + low;
+  if (allclouds > 150) {
+    c += ':cloud:';
+  } else if (allclouds < 50) {
+    c += ':sunny:';
+  }
+  return c;
 }
 
 var arrowFromDirectionKite4you = function(angle) {
