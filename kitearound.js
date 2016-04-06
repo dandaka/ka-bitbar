@@ -1,20 +1,21 @@
-var url = "http://kite4you.ru/windguru/online/weather_getdata_json.php?db=kitebeach";
+var url = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=kitebeach';
 
 var url2 = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=lesnoe';
 
 var url3 = 'https://beta.windguru.cz/258786';
 
-var request = require("request");
+var request = require('request');
 var cheerio = require('cheerio');
 
-var arrows = ['↑', '↖', '←', '↙', '↓', '↘', '→', '↗', '↑'];
+var arrows = ['↓', '↙', '←', '↖', '↑', '↗', '→', '↘',  '↓'];
+var WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 var PEAK_MIN = 12; // Wind starts at 12 knots
 
 var peaksTime = [];
 
 var parseBody = function(body) {
   // Wind direction
-  var dir_arrow = arrowFromDirection(body.wind_arrow);
+  var dir_arrow = arrowFromDirectionKite4you(body.wind_arrow);
   // Wind speed avg in knots
   var last_wind = body.wind_avg[body.wind_avg.length - 1][1];
   var wind_knots = Math.round(last_wind * 1.94384);
@@ -47,7 +48,6 @@ var parseWindguruData = function(body) {
   $ = cheerio.load(body);
   var windguru_json_str = $('.spot-live-div').next('script').text().split('\n')[0].replace('var wg_fcst_tab_data_1 = ', '').slice(0, -1);
   var windguru_json = JSON.parse(windguru_json_str);
-  console.log('Windguru ' + Math.round(windguru_json.fcst[3].WINDSPD[0]) + ' knots');
   findPeaks(windguru_json);
 }
 
@@ -60,12 +60,29 @@ var findPeaks = function(windguru_json) {
     if(wspd > PEAK_MIN && wspd > wspd_next && wspd > wspd_prev) {
       //console.log(windguru_json.fcst[3].WINDSPD[i]);
       peaksTime.push(i);
-      console.log("i="+i+" wspd="+wspd);
+      var temp = Math.round(windguru_json.fcst[3].TMP[i])+" °C";
+      var wind = Math.round(wspd)+" knots";
+      var weekday = WEEKDAYS[windguru_json.fcst[3].hr_weekday[i]];
+      var time = windguru_json.fcst[3].hr_h[i] + ':00';
+      var rainstr = '';
+      if (windguru_json.fcst[3].APCP[i] > 0.2 && windguru_json.fcst[3].APCP[i] < 1.5) {
+        rainstr += windguru_json.fcst[3].APCP[i] + ' mm/3h';
+      }
+      arrow = arrowFromDirectionWindGuru(windguru_json.fcst[3].WINDDIR[i]);
+      console.log(weekday+" "+time+" — "+arrow+wind+" "+temp+" "+rainstr);
     }
   }
 }
 
-var arrowFromDirection = function(angle) {
+var arrowFromDirectionKite4you = function(angle) {
+  var dir_index = Math.round(angle/45);
+  if (dir_index >= 8) {
+    dir_index--;
+  }
+  return arrows[dir_index];
+}
+
+var arrowFromDirectionWindGuru = function(angle) {
   var dir_index = Math.round(angle/45);
   if (dir_index >= 8) {
     dir_index--;
