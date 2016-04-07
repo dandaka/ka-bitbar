@@ -13,7 +13,9 @@ var PEAK_MIN = 12; // Wind starts at 12 knots
 
 var peaksTime = [];
 
-var parseBody = function(body) {
+var finished = _.after(3, doOutput);
+
+var parseBody = function(body, station_name) {
   // Wind direction
   var dir_arrow = arrowFromDirectionKite4you(body.wind_arrow);
   // Wind speed avg in knots
@@ -22,36 +24,53 @@ var parseBody = function(body) {
   // Temperature
   var last_temp = body.temp_avg[body.temp_avg.length - 1][1];
   // Online or not?
-  var online_text = body.kitebeach_online == 1 ? '' : ':thumbsdown:';
-  var online_text_toolbar = body.kitebeach_online == 1 ? '' : ' :(';
-  console.log(dir_arrow + wind_knots + online_text_toolbar);
+  if (station_name == 'Kitebeach') {
+    var online_status = body.kitebeach_online;
+  } else {
+    var online_status = body.lesnoe_online;
+  }
+  var online_text = online_status == 1 ? '' : ':thumbsdown:';
+  var online_text_toolbar = online_status == 1 ? '' : ' :(';
+  if (station_name == 'Kitebeach') {
+    console.log(dir_arrow + wind_knots + online_text_toolbar);
+  }
   console.log('---');
-  console.log('Kitebeach '+dir_arrow + wind_knots + ' knots '+last_temp+' °C '+online_text);
+  console.log(station_name+' '+dir_arrow + wind_knots + ' knots '+last_temp+' °C '+online_text);
   console.log('Kite4you.ru meteo stations|href=http://kite4you.ru/windguru/online/meteostations.php');
   console.log('---');
+  finished();
 }
 
-var responseF = function (error, response, body) {
+var responseF = function (error, response, body, station_name) {
   if (!error && response.statusCode === 200) {
-    parseBody(body);
+    parseBody(body, station_name);
   } else {
-    console.log("? kn");
-    console.log('---');
-    console.log(':thumbsdown: Error');
+    console.log('Error');
   }
 };
 
-// Get weather data from Kite4you
+// Get weather data from Kite4you: Kitebeach
 request({
   url: url,
   json: true
-}, responseF);
+}, function(error, response, body) {
+   responseF(error, response, body, "Kitebeach");
+});
+
+// Get weather data from Kite4you: Lesnoe
+request({
+  url: url2,
+  json: true
+}, function(error, response, body) {
+   responseF(error, response, body, "Lesnoe");
+});
 
 var parseWindguruData = function(body) {
   $ = cheerio.load(body);
   var windguru_json_str = $('.spot-live-div').next('script').text().split('\n')[0].replace('var wg_fcst_tab_data_1 = ', '').slice(0, -1);
   var windguru_json = JSON.parse(windguru_json_str);
   findPeaks(windguru_json);
+  finished();
 }
 
 var findPeaks = function(windguru_json) {
@@ -60,7 +79,7 @@ var findPeaks = function(windguru_json) {
     wspd = windguru_json.fcst[3].WINDSPD[i];
     wspd_next = windguru_json.fcst[3].WINDSPD[i+1];
     wspd_prev = windguru_json.fcst[3].WINDSPD[i-1];
-    if(wspd > PEAK_MIN && wspd > wspd_next && wspd > wspd_prev) {
+    if(wspd >= PEAK_MIN && wspd >= wspd_next && wspd >= wspd_prev) {
       //console.log(windguru_json.fcst[3].WINDSPD[i]);
       peaksTime.push(i);
       var temp = Math.round(windguru_json.fcst[3].TMP[i])+"°C";
@@ -121,6 +140,10 @@ request({
     parseWindguruData(body);
   }
 })
+
+function doOutput() {
+  console.log("output!");
+}
 
 /* Test of JSON loading
 var path = require('path');
