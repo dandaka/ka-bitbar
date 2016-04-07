@@ -15,6 +15,7 @@ var PEAK_MIN = 12; // Wind starts at 12 knots
 var peaksTime = [];
 
 var parseBody = function(body, station_name) {
+  var res = '';
   // Wind direction
   var dir_arrow = arrowFromDirectionKite4you(body.wind_arrow);
   // Wind speed avg in knots
@@ -31,19 +32,22 @@ var parseBody = function(body, station_name) {
   var online_text = online_status == 1 ? '' : ':thumbsdown:';
   var online_text_toolbar = online_status == 1 ? '' : ' :(';
   if (station_name == 'Kitebeach') {
-    console.log(dir_arrow + wind_knots + online_text_toolbar);
+    res += dir_arrow + wind_knots + online_text_toolbar + '\n';
+    res += '---\n'
   }
-  console.log('---');
-  console.log(station_name+' '+dir_arrow + wind_knots + ' knots '+last_temp+' °C '+online_text);
-  console.log('Kite4you.ru meteo stations|href=http://kite4you.ru/windguru/online/meteostations.php');
-  console.log('---');
+  res += station_name+' '+dir_arrow + wind_knots + ' knots '+last_temp+' °C '+online_text + '\n';
+  if (station_name != 'Kitebeach') {
+    res += 'Kite4you.ru meteo stations|href=http://kite4you.ru/windguru/online/meteostations.php' + '\n';
+    res += '---' + '\n';
+  }
+  return res;
 }
 
 var responseF = function (error, response, body, station_name) {
   if (!error && response.statusCode === 200) {
-    parseBody(body, station_name);
+    return parseBody(body, station_name);
   } else {
-    console.log('Error');
+    return 'Error';
   }
 };
 
@@ -51,11 +55,12 @@ var parseWindguruData = function(body) {
   $ = cheerio.load(body);
   var windguru_json_str = $('.spot-live-div').next('script').text().split('\n')[0].replace('var wg_fcst_tab_data_1 = ', '').slice(0, -1);
   var windguru_json = JSON.parse(windguru_json_str);
-  findPeaks(windguru_json);
+  return findPeaks(windguru_json);
 }
 
 var findPeaks = function(windguru_json) {
   var wspd, wspd_next, wspd_prev;
+  var res = '';
   for (var i = 1; i < windguru_json.fcst[3].WINDSPD.length - 1; i++) {
     wspd = windguru_json.fcst[3].WINDSPD[i];
     wspd_next = windguru_json.fcst[3].WINDSPD[i+1];
@@ -72,9 +77,10 @@ var findPeaks = function(windguru_json) {
       var rainstr = rainStrFromPercipation(percp);
       var arrow = arrowFromDirectionWindGuru(windguru_json.fcst[3].WINDDIR[i]);
       var cloudStr = cloudStrFromCover(windguru_json.fcst[3].HCDC[i], windguru_json.fcst[3].MCDC[i], windguru_json.fcst[3].LCDC[i]);
-      console.log(weekday+" "+time+' '+arrow+' '+wind+" "+temp+rainstr+' '+cloudStr);
+      res += weekday+' '+time+' '+arrow+' '+wind+" "+temp+rainstr+' '+cloudStr+'\n';
     }
   }
+  return res;
 }
 
 var rainStrFromPercipation = function(percipation) {
@@ -119,8 +125,8 @@ async.parallel([
       url: url,
       json: true
     }, function(error, response, body) {
-       responseF(error, response, body, "Kitebeach");
-       callback();
+       res = responseF(error, response, body, "Kitebeach");
+       callback(null, res);
     });
   },
   function(callback) {
@@ -129,8 +135,8 @@ async.parallel([
       url: url2,
       json: true
     }, function(error, response, body) {
-       responseF(error, response, body, "Lesnoe");
-       callback();
+       res = responseF(error, response, body, "Lesnoe");
+       callback(null, res);
     });
   },
   function(callback) {
@@ -139,14 +145,17 @@ async.parallel([
       url: url3,
       gzip: true
     }, function (error, response, body) {
+      var res = 'No data from Windguru';
       if (!error && response.statusCode === 200) {
-        parseWindguruData(body);
+        res = parseWindguruData(body);
       }
-      callback();
+      callback(null, res);
     });
   }
-], function () {
-  console.log('all done');
+], function (err, results) {
+  for (var i = 0; i < results.length; i++) {
+    console.log(results[i]);
+  }
 });
 
 /* Test of JSON loading
