@@ -16,11 +16,11 @@ var peaksTime = [];
 
 var parseBody = function(body, station_name) {
   var res = '';
-  // Wind direction
-  var dir_arrow = arrowFromDirectionKite4you(body.wind_arrow);
   // Wind speed avg in knots
   var last_wind = body.wind_avg[body.wind_avg.length - 1][1];
   var wind_knots = Math.round(last_wind * 1.94384);
+  // Wind direction
+  var dir_arrow = arrowFromDirection(body.wind_arrow, wind_knots);
   // Temperature
   var last_temp = body.temp_avg[body.temp_avg.length - 1][1];
   // Online or not?
@@ -75,11 +75,12 @@ var findPeaks = function(windguru_json) {
       var time = windguru_json.fcst[3].hr_h[i] + ':00';
       var percp = windguru_json.fcst[3].APCP[i];
       var rainstr = rainStrFromPercipation(percp);
-      var arrow = arrowFromDirectionWindGuru(windguru_json.fcst[3].WINDDIR[i]);
+      var arrow = arrowFromDirection(windguru_json.fcst[3].WINDDIR[i], wspd);
       var cloudStr = cloudStrFromCover(windguru_json.fcst[3].HCDC[i], windguru_json.fcst[3].MCDC[i], windguru_json.fcst[3].LCDC[i]);
       res += weekday+' '+time+' '+arrow+' '+wind+" "+temp+rainstr+' '+cloudStr+'\n';
     }
   }
+  res += 'Kitebeach WindGuru forecast|href=https://beta.windguru.cz/258786\n'
   return res;
 }
 
@@ -102,15 +103,10 @@ var cloudStrFromCover = function(high, mid, low) {
   return c;
 }
 
-var arrowFromDirectionKite4you = function(angle) {
-  var dir_index = Math.round(angle/45);
-  if (dir_index >= 8) {
-    dir_index--;
+var arrowFromDirection = function(angle, windspeed) {
+  if (windspeed < 2) {
+    return '⌀';
   }
-  return arrows[dir_index];
-}
-
-var arrowFromDirectionWindGuru = function(angle) {
   var dir_index = Math.round(angle/45);
   if (dir_index >= 8) {
     dir_index--;

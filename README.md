@@ -18,3 +18,5 @@ Simple script, that shows Kaliningrad weather station from Baltic bay and foreca
 * Indicate a nearby close forecast with :thumbsup: emoji in global
 * Add a MSW forecast for local spot
 * Add 9km WRF model (with auth) to show close days
+* Link to Windguru website
+* If wind < 2 knots, no need to show arrow
