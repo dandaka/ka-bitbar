@@ -112,35 +112,41 @@ var arrowFromDirectionWindGuru = function(angle) {
   return arrows[dir_index];
 }
 
-// Get weather data from Kite4you: Kitebeach
-request({
-  url: url,
-  json: true
-}, function(error, response, body) {
-   responseF(error, response, body, "Kitebeach");
-});
-
-// Get weather data from Kite4you: Lesnoe
-request({
-  url: url2,
-  json: true
-}, function(error, response, body) {
-   responseF(error, response, body, "Lesnoe");
-});
-
-// Get forecast data from Windguru
-request({
-  url: url3,
-  gzip: true
-}, function (error, response, body) {
-  if (!error && response.statusCode === 200) {
-    parseWindguruData(body);
-  }
-});
-
-
 async.parallel([
+  function(callback) {
+    // Get weather data from Kite4you: Kitebeach
+    request({
+      url: url,
+      json: true
+    }, function(error, response, body) {
+       responseF(error, response, body, "Kitebeach");
+       callback();
+    });
+  },
+  function(callback) {
+    // Get weather data from Kite4you: Lesnoe
+    request({
+      url: url2,
+      json: true
+    }, function(error, response, body) {
+       responseF(error, response, body, "Lesnoe");
+       callback();
+    });
+  },
+  function(callback) {
+    // Get forecast data from Windguru
+    request({
+      url: url3,
+      gzip: true
+    }, function (error, response, body) {
+      if (!error && response.statusCode === 200) {
+        parseWindguruData(body);
+      }
+      callback();
+    });
+  }
 ], function () {
+  console.log('all done');
 });
 
 /* Test of JSON loading
