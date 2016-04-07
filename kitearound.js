@@ -4,6 +4,7 @@ var url2 = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=lesno
 
 var url3 = 'https://beta.windguru.cz/258786';
 
+var async = require('async');
 var request = require('request');
 var cheerio = require('cheerio');
 
@@ -12,8 +13,6 @@ var WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 var PEAK_MIN = 12; // Wind starts at 12 knots
 
 var peaksTime = [];
-
-var finished = _.after(3, doOutput);
 
 var parseBody = function(body, station_name) {
   // Wind direction
@@ -38,7 +37,6 @@ var parseBody = function(body, station_name) {
   console.log(station_name+' '+dir_arrow + wind_knots + ' knots '+last_temp+' °C '+online_text);
   console.log('Kite4you.ru meteo stations|href=http://kite4you.ru/windguru/online/meteostations.php');
   console.log('---');
-  finished();
 }
 
 var responseF = function (error, response, body, station_name) {
@@ -49,28 +47,11 @@ var responseF = function (error, response, body, station_name) {
   }
 };
 
-// Get weather data from Kite4you: Kitebeach
-request({
-  url: url,
-  json: true
-}, function(error, response, body) {
-   responseF(error, response, body, "Kitebeach");
-});
-
-// Get weather data from Kite4you: Lesnoe
-request({
-  url: url2,
-  json: true
-}, function(error, response, body) {
-   responseF(error, response, body, "Lesnoe");
-});
-
 var parseWindguruData = function(body) {
   $ = cheerio.load(body);
   var windguru_json_str = $('.spot-live-div').next('script').text().split('\n')[0].replace('var wg_fcst_tab_data_1 = ', '').slice(0, -1);
   var windguru_json = JSON.parse(windguru_json_str);
   findPeaks(windguru_json);
-  finished();
 }
 
 var findPeaks = function(windguru_json) {
@@ -131,6 +112,22 @@ var arrowFromDirectionWindGuru = function(angle) {
   return arrows[dir_index];
 }
 
+// Get weather data from Kite4you: Kitebeach
+request({
+  url: url,
+  json: true
+}, function(error, response, body) {
+   responseF(error, response, body, "Kitebeach");
+});
+
+// Get weather data from Kite4you: Lesnoe
+request({
+  url: url2,
+  json: true
+}, function(error, response, body) {
+   responseF(error, response, body, "Lesnoe");
+});
+
 // Get forecast data from Windguru
 request({
   url: url3,
@@ -139,11 +136,12 @@ request({
   if (!error && response.statusCode === 200) {
     parseWindguruData(body);
   }
-})
+});
 
-function doOutput() {
-  console.log("output!");
-}
+
+async.parallel([
+], function () {
+});
 
 /* Test of JSON loading
 var path = require('path');
