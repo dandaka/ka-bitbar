@@ -21,11 +21,14 @@ var parseBody = function(body) {
   var wind_knots = Math.round(last_wind * 1.94384);
   // Temperature
   var last_temp = body.temp_avg[body.temp_avg.length - 1][1];
-  console.log(dir_arrow + wind_knots);
-  console.log('---');
+  // Online or not?
   var online_text = body.kitebeach_online == 1 ? '' : ':thumbsdown:';
+  var online_text_toolbar = body.kitebeach_online == 1 ? '' : ' :(';
+  console.log(dir_arrow + wind_knots + online_text_toolbar);
+  console.log('---');
   console.log('Kitebeach '+dir_arrow + wind_knots + ' knots '+last_temp+' °C '+online_text);
   console.log('Kite4you.ru meteo stations|href=http://kite4you.ru/windguru/online/meteostations.php');
+  console.log('---');
 }
 
 var responseF = function (error, response, body) {
