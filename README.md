@@ -20,3 +20,4 @@ Simple script, that shows Kaliningrad weather station from Baltic bay and foreca
 * Add 9km WRF model (with auth) to show close days
 * Link to Windguru website
 * If wind < 2 knots, no need to show arrow
+* iCal export with close forecasts to integrate with Google Calendar

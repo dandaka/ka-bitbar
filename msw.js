@@ -4,6 +4,8 @@ var url2 = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=lesno
 
 var url3 = 'https://beta.windguru.cz/258786';
 
+var url4 = 'http://magicseaweed.com/Zelenogradsk-Surf-Report/4518/';
+
 var async = require('async');
 var request = require('request');
 var cheerio = require('cheerio');
@@ -51,35 +53,31 @@ var responseF = function (error, response, body, station_name) {
   }
 };
 
-var parseWindguruData = function(body) {
-  $ = cheerio.load(body);
-  var windguru_json_str = $('.spot-live-div').next('script').text().split('\n')[0].replace('var wg_fcst_tab_data_1 = ', '').slice(0, -1);
-  var windguru_json = JSON.parse(windguru_json_str);
-  return findPeaks(windguru_json);
-}
-
-var findPeaks = function(windguru_json) {
-  var wspd, wspd_next, wspd_prev;
+var findPeaksMSW = function(json) {
+  var wh, wh_next, wh_prev;
   var res = '';
-  for (var i = 1; i < windguru_json.fcst[3].WINDSPD.length - 1; i++) {
-    wspd = windguru_json.fcst[3].WINDSPD[i];
-    wspd_next = windguru_json.fcst[3].WINDSPD[i+1];
-    wspd_prev = windguru_json.fcst[3].WINDSPD[i-1];
+  //console.log(json);
+  /*
+  for (var i = 1; i < json.fcst[3].WINDSPD.length - 1; i++) {
+    wspd = json.fcst[3].WINDSPD[i];
+    wspd_next = json.fcst[3].WINDSPD[i+1];
+    wspd_prev = json.fcst[3].WINDSPD[i-1];
     if(wspd >= PEAK_MIN && wspd >= wspd_next && wspd >= wspd_prev) {
       peaksTime.push(i);
-      var temp = Math.round(windguru_json.fcst[3].TMP[i])+"°C";
-      var gust = Math.round(windguru_json.fcst[3].GUST[i]);
+      var temp = Math.round(json.fcst[3].TMP[i])+"°C";
+      var gust = Math.round(json.fcst[3].GUST[i]);
       var wind = Math.round(wspd)+"–"+gust+" knots,";
-      var weekday = WEEKDAYS[windguru_json.fcst[3].hr_weekday[i]];
-      var time = windguru_json.fcst[3].hr_h[i] + ':00';
-      var percp = windguru_json.fcst[3].APCP[i];
+      var weekday = WEEKDAYS[json.fcst[3].hr_weekday[i]];
+      var time = json.fcst[3].hr_h[i] + ':00';
+      var percp = json.fcst[3].APCP[i];
       var rainstr = rainStrFromPercipation(percp);
-      var arrow = arrowFromDirection(windguru_json.fcst[3].WINDDIR[i], wspd);
-      var cloudStr = cloudStrFromCover(windguru_json.fcst[3].HCDC[i], windguru_json.fcst[3].MCDC[i], windguru_json.fcst[3].LCDC[i]);
+      var arrow = arrowFromDirection(json.fcst[3].WINDDIR[i], wspd);
+      var cloudStr = cloudStrFromCover(json.fcst[3].HCDC[i], json.fcst[3].MCDC[i], json.fcst[3].LCDC[i]);
       res += weekday+' '+time+' '+arrow+' '+wind+" "+temp+rainstr+' '+cloudStr+'\n';
     }
   }
-  res += 'Kitebeach WindGuru forecast|href=https://beta.windguru.cz/258786\n'
+  */
+  res += 'MSW forecast|href=http://magicseaweed.com/Zelenogradsk-Surf-Report/4518/\n';
   return res;
 }
 
@@ -113,38 +111,26 @@ var arrowFromDirection = function(angle, windspeed) {
   return arrows[dir_index];
 }
 
+var parseMSWData = function(body) {
+  $ = cheerio.load(body);
+  // var msw_json_str = $('#msw-js-fcc').data('chartdata');
+  var msw_json_str = $('#msw-js-fcc').data('waveheights');
+  console.log(msw_json_str);
+  // var msw_json = JSON.parse(msw_json_str);
+  // return findPeaksMSW(msw_json);
+}
+
 async.parallel([
   function(callback) {
-    // Get weather data from Kite4you: Kitebeach
+    // Get weather data from MSW Zelenogradsk
     request({
-      url: url,
-      json: true
+      url: url4
     }, function(error, response, body) {
-       res = responseF(error, response, body, "Kitebeach");
+       var res = 'No data from MSW';
+       if (!error && response.statusCode === 200) {
+         res = parseMSWData(body);
+       }
        callback(null, res);
-    });
-  },
-  function(callback) {
-    // Get weather data from Kite4you: Lesnoe
-    request({
-      url: url2,
-      json: true
-    }, function(error, response, body) {
-       res = responseF(error, response, body, "Lesnoe");
-       callback(null, res);
-    });
-  },
-  function(callback) {
-    // Get forecast data from Windguru
-    request({
-      url: url3,
-      gzip: true
-    }, function (error, response, body) {
-      var res = 'No data from Windguru';
-      if (!error && response.statusCode === 200) {
-        res = parseWindguruData(body);
-      }
-      callback(null, res);
     });
   }
 ], function (err, results) {
