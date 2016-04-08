@@ -9,6 +9,7 @@ var url4 = 'http://magicseaweed.com/Zelenogradsk-Surf-Report/4518/';
 var async = require('async');
 var request = require('request');
 var cheerio = require('cheerio');
+var dateFormat = require('dateformat');
 
 var arrows = ['↓', '↙', '←', '↖', '↑', '↗', '→', '↘',  '↓'];
 var WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -70,7 +71,7 @@ var findPeaksMSW = function(json) {
     wh_next = json.run[i+1].swell.height;
     if(wh >= WAVE_MIN && wh >= wh_next && wh >= wh_prev) {
       var date = dateFromTimeStamp(json.run[i].localTimestamp);
-      res += date + " " + wh + " m waves";
+      res += date + ", " + wh + " m waves\n";
     }
   }
   res += 'MSW forecast|href=http://magicseaweed.com/Zelenogradsk-Surf-Report/4518/\n';
@@ -78,7 +79,8 @@ var findPeaksMSW = function(json) {
 }
 
 var dateFromTimeStamp = function(timeStamp) {
-  return '';
+  var d = new Date(timeStamp*1000);
+  return dateFormat(d, "ddd HH:MM");
 }
 
 var rainStrFromPercipation = function(percipation) {
