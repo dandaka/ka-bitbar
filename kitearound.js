@@ -1,16 +1,17 @@
 var url = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=kitebeach';
-
 var url2 = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=lesnoe';
-
 var url3 = 'https://beta.windguru.cz/258786';
+var url4 = 'http://magicseaweed.com/Zelenogradsk-Surf-Report/4518/';
 
 var async = require('async');
 var request = require('request');
 var cheerio = require('cheerio');
+var dateFormat = require('dateformat');
 
 var arrows = ['↓', '↙', '←', '↖', '↑', '↗', '→', '↘',  '↓'];
 var WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 var PEAK_MIN = 12; // Wind starts at 12 knots
+var WAVE_MIN = 0.5; // Waves less than 0.5 m does not matter
 
 var peaksTime = [];
 
@@ -113,6 +114,38 @@ var arrowFromDirection = function(angle, windspeed) {
   return arrows[dir_index];
 }
 
+var findPeaksMSW = function(json) {
+  var wh, wh_next, wh_prev;
+  var nowTimeStamp = Math.floor(Date.now() / 1000);
+  var res = '';
+  res += '---\n';
+  for(var i=1; i < json.run.length - 1; i++) {
+    // Only 5 days are valid
+    if (json.run[i].localTimestamp - nowTimeStamp > (5*24*60*60)) {
+      break;
+    }
+    wh = json.run[i].swell.height;
+    wh_prev = json.run[i-1].swell.height;
+    wh_next = json.run[i+1].swell.height;
+    if(wh >= WAVE_MIN && wh >= wh_next && wh >= wh_prev) {
+      var date = dateFromTimeStamp(json.run[i].localTimestamp);
+      res += date + ", " + wh + " m waves\n";
+    }
+  }
+  res += 'Zelenogradsk MSW forecast|href=http://magicseaweed.com/Zelenogradsk-Surf-Report/4518/\n';
+  return res;
+}
+var parseMSWData = function(body) {
+  $ = cheerio.load(body);
+  var msw_json = $('#msw-js-fcc').data('chartdata');
+  return findPeaksMSW(msw_json);
+}
+
+var dateFromTimeStamp = function(timeStamp) {
+  var d = new Date(timeStamp*1000);
+  return dateFormat(d, "ddd HH:MM");
+}
+
 async.parallel([
   function(callback) {
     // Get weather data from Kite4you: Kitebeach
@@ -146,6 +179,18 @@ async.parallel([
       }
       callback(null, res);
     });
+  },
+  function(callback) {
+    // Get weather data from MSW Zelenogradsk
+    request({
+      url: url4
+    }, function(error, response, body) {
+      var res = 'No data from MSW';
+      if (!error && response.statusCode === 200) {
+        res = parseMSWData(body);
+      }
+      callback(null, res);
+    });
   }
 ], function (err, results) {
   for (var i = 0; i < results.length; i++) {
@@ -153,11 +198,10 @@ async.parallel([
   }
 });
 
-/* Test of JSON loading
-var path = require('path');
-var filename = path.join(__dirname, 'response-k4y.json');
-var f = require('fs').readFileSync(filename, 'utf8');
-var jsontest = JSON.parse(f);
-
-parseBody(jsontest);
-*/
+var testJSONLoad = function() {
+  var path = require('path');
+  var filename = path.join(__dirname, 'response-k4y.json');
+  var f = require('fs').readFileSync(filename, 'utf8');
+  var jsontest = JSON.parse(f);
+  parseBody(jsontest);
+}
