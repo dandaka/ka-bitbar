@@ -72,7 +72,13 @@ var findPeaks = function(windguru_json) {
       var gust = Math.round(windguru_json.fcst[3].GUST[i]);
       var wind = Math.round(wspd)+"–"+gust+" knots,";
       var weekday = WEEKDAYS[windguru_json.fcst[3].hr_weekday[i]];
-      var time = windguru_json.fcst[3].hr_h[i] + ':00';
+      var time;
+      // Correct time for 1h (Kaliningrad is 1 hour behind Moscow)
+      if (windguru_json.fcst[3].hr_h[i] == "00") {
+        time = "23:00";
+      } else {
+        time = (Number(windguru_json.fcst[3].hr_h[i]) - 1) + ':00';
+      }
       var percp = windguru_json.fcst[3].APCP[i];
       var rainstr = rainStrFromPercipation(percp);
       var arrow = arrowFromDirection(windguru_json.fcst[3].WINDDIR[i], wspd);
