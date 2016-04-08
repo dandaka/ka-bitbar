@@ -53,32 +53,32 @@ var responseF = function (error, response, body, station_name) {
   }
 };
 
+var WAVE_MIN = 0.5;
+
 var findPeaksMSW = function(json) {
   var wh, wh_next, wh_prev;
+  var nowTimeStamp = Math.floor(Date.now() / 1000);
   var res = '';
-  //console.log(json);
-  /*
-  for (var i = 1; i < json.fcst[3].WINDSPD.length - 1; i++) {
-    wspd = json.fcst[3].WINDSPD[i];
-    wspd_next = json.fcst[3].WINDSPD[i+1];
-    wspd_prev = json.fcst[3].WINDSPD[i-1];
-    if(wspd >= PEAK_MIN && wspd >= wspd_next && wspd >= wspd_prev) {
-      peaksTime.push(i);
-      var temp = Math.round(json.fcst[3].TMP[i])+"°C";
-      var gust = Math.round(json.fcst[3].GUST[i]);
-      var wind = Math.round(wspd)+"–"+gust+" knots,";
-      var weekday = WEEKDAYS[json.fcst[3].hr_weekday[i]];
-      var time = json.fcst[3].hr_h[i] + ':00';
-      var percp = json.fcst[3].APCP[i];
-      var rainstr = rainStrFromPercipation(percp);
-      var arrow = arrowFromDirection(json.fcst[3].WINDDIR[i], wspd);
-      var cloudStr = cloudStrFromCover(json.fcst[3].HCDC[i], json.fcst[3].MCDC[i], json.fcst[3].LCDC[i]);
-      res += weekday+' '+time+' '+arrow+' '+wind+" "+temp+rainstr+' '+cloudStr+'\n';
+  console.log("items count "+json.run.length);
+  for(var i=1; i < json.run.length - 1; i++) {
+    // Only 5 days are valid
+    if (json.run[i].localTimestamp - nowTimeStamp > (5*24*60*60)) {
+      break;
+    }
+    wh = json.run[i].swell.height;
+    wh_prev = json.run[i-1].swell.height;
+    wh_next = json.run[i+1].swell.height;
+    if(wh >= WAVE_MIN && wh >= wh_next && wh >= wh_prev) {
+      var date = dateFromTimeStamp(json.run[i].localTimestamp);
+      res += date + " " + wh + " m waves";
     }
   }
-  */
   res += 'MSW forecast|href=http://magicseaweed.com/Zelenogradsk-Surf-Report/4518/\n';
   return res;
+}
+
+var dateFromTimeStamp = function(timeStamp) {
+  return '';
 }
 
 var rainStrFromPercipation = function(percipation) {
@@ -113,11 +113,8 @@ var arrowFromDirection = function(angle, windspeed) {
 
 var parseMSWData = function(body) {
   $ = cheerio.load(body);
-  // var msw_json_str = $('#msw-js-fcc').data('chartdata');
-  var msw_json_str = $('#msw-js-fcc').data('waveheights');
-  console.log(msw_json_str);
-  // var msw_json = JSON.parse(msw_json_str);
-  // return findPeaksMSW(msw_json);
+  var msw_json = $('#msw-js-fcc').data('chartdata');
+  return findPeaksMSW(msw_json);
 }
 
 async.parallel([
