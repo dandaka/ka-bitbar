@@ -19,3 +19,5 @@ Simple script, that shows Kaliningrad weather station from Baltic bay and foreca
 * Add 9km WRF model (with auth) to show close days
 * iCal export with close forecasts to integrate with Google Calendar
 * Remove forecasts with 5+ days (not reliable)
+* Sort both WindGuru and MSW forecasts in one array
+* Maybe add to MSW data from WindGuru. Maybe mix both data arrays first?
