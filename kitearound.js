@@ -215,9 +215,7 @@ isOnline(function(err, online) {
   } else {
     console.log('offline');
   }
-  //=> true
 });
-
 
 var testJSONLoad = function() {
   var path = require('path');
