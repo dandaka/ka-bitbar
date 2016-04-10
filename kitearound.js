@@ -208,14 +208,22 @@ var getData = function() {
   });
 }
 
-
-isOnline(function(err, online) {
-  if (online) {
+async.during(
+  // Check if we have an online connection
+  function (callback) {
+    isOnline(function(err, online) {
+      callback(err, !online);
+    });
+  },
+  // Wait 3 seconds
+  function (callback) {
+    setTimeout(callback, 3000);
+  },
+  // We have a connection
+  function (err) {
     getData();
-  } else {
-    console.log('offline');
   }
-});
+);
 
 var testJSONLoad = function() {
   var path = require('path');
