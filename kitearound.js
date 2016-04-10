@@ -57,13 +57,17 @@ var parseWindguruData = function(body) {
   $ = cheerio.load(body);
   var windguru_json_str = $('.spot-live-div').next('script').text().split('\n')[0].replace('var wg_fcst_tab_data_1 = ', '').slice(0, -1);
   var windguru_json = JSON.parse(windguru_json_str);
-  return findPeaks(windguru_json);
+  return findPeaksWindGuru(windguru_json);
 }
 
-var findPeaks = function(windguru_json) {
+var findPeaksWindGuru = function(windguru_json) {
   var wspd, wspd_next, wspd_prev;
   var res = '';
   for (var i = 1; i < windguru_json.fcst[3].WINDSPD.length - 1; i++) {
+    // Throw out all forecasts after 5 days, because it's unreliable
+    if (windguru_json.fcst[3].hours [i] >= 5*24) {
+      break;
+    }
     wspd = windguru_json.fcst[3].WINDSPD[i];
     wspd_next = windguru_json.fcst[3].WINDSPD[i+1];
     wspd_prev = windguru_json.fcst[3].WINDSPD[i-1];
