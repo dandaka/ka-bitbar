@@ -14,10 +14,10 @@ Simple script, that shows Kaliningrad weather station from Baltic bay and foreca
 
 ## 2DO ##
 
+* Web version for Heroku
+* iCal export with close forecasts to integrate with Google Calendar
 * Indicate close forecasts (< 3 days) with :thumbsup: emoji
 * Indicate a nearby close forecast with :thumbsup: emoji in global
 * Add 9km WRF model (with auth) to show close days
-* iCal export with close forecasts to integrate with Google Calendar
 * Sort both WindGuru and MSW forecasts in one array
 * Maybe add to MSW data from WindGuru. Maybe mix both data arrays first?
-* Web version for Heroku

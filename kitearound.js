@@ -1,20 +1,92 @@
-var url = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=kitebeach';
-var url2 = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=lesnoe';
-var url3 = 'https://beta.windguru.cz/258786';
-var url4 = 'http://magicseaweed.com/Zelenogradsk-Surf-Report/4518/';
-
 var async = require('async');
 var request = require('request');
 var cheerio = require('cheerio');
 var dateFormat = require('dateformat');
 var isOnline = require('is-online');
 
-var arrows = ['↓', '↙', '←', '↖', '↑', '↗', '→', '↘',  '↓'];
+var url = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=kitebeach';
+var url2 = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=lesnoe';
+var url3 = 'https://beta.windguru.cz/258786';
+var url4 = 'http://magicseaweed.com/Zelenogradsk-Surf-Report/4518/';
+
+var ARROWS = ['↓', '↙', '←', '↖', '↑', '↗', '→', '↘',  '↓'];
 var WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 var PEAK_MIN = 12; // Wind starts at 12 knots
 var WAVE_MIN = 0.5; // Waves less than 0.5 m does not matter
 
 var peaksTime = [];
+
+async.during(
+  // Check if we have an online connection
+  function (callback) {
+    isOnline(function(err, online) {
+      callback(err, !online);
+    });
+  },
+  // If not, wait 3 seconds and repeat
+  function (callback) {
+    setTimeout(callback, 3000);
+  },
+  // We have a connection
+  function (err) {
+    getData();
+  }
+);
+
+var getData = function() {
+  async.parallel([
+    function(callback) {
+      // Get weather data from Kite4you: Kitebeach
+      request({
+        url: url,
+        json: true
+      }, function(error, response, body) {
+        res = responseF(error, response, body, "Kitebeach");
+        callback(null, res);
+      });
+    },
+    function(callback) {
+      // Get weather data from Kite4you: Lesnoe
+      request({
+        url: url2,
+        json: true
+      }, function(error, response, body) {
+        res = responseF(error, response, body, "Lesnoe");
+        callback(null, res);
+      });
+    },
+    function(callback) {
+      // Get forecast data from Windguru
+      request({
+        url: url3,
+        gzip: true
+      }, function (error, response, body) {
+        var res = 'No data from Windguru';
+        if (!error && response.statusCode === 200) {
+          res = parseWindguruData(body);
+        }
+        callback(null, res);
+      });
+    },
+    function(callback) {
+      // Get weather data from MSW Zelenogradsk
+      request({
+        url: url4
+      }, function(error, response, body) {
+        var res = 'No data from MSW';
+        if (!error && response.statusCode === 200) {
+          res = parseMSWData(body);
+        }
+        callback(null, res);
+      });
+    }
+  ], function (err, results) {
+    // Output all results
+    for (var i = 0; i < results.length; i++) {
+      console.log(results[i]);
+    }
+  });
+}
 
 var parseBody = function(body, station_name) {
   var res = '';
@@ -122,7 +194,7 @@ var arrowFromDirection = function(angle, windspeed) {
   if (dir_index >= 8) {
     dir_index--;
   }
-  return arrows[dir_index];
+  return ARROWS[dir_index];
 }
 
 var findPeaksMSW = function(json) {
@@ -156,78 +228,6 @@ var dateFromTimeStamp = function(timeStamp) {
   var d = new Date(timeStamp*1000);
   return dateFormat(d, "ddd HH:MM");
 }
-
-var getData = function() {
-  async.parallel([
-    function(callback) {
-      // Get weather data from Kite4you: Kitebeach
-      request({
-        url: url,
-        json: true
-      }, function(error, response, body) {
-         res = responseF(error, response, body, "Kitebeach");
-         callback(null, res);
-      });
-    },
-    function(callback) {
-      // Get weather data from Kite4you: Lesnoe
-      request({
-        url: url2,
-        json: true
-      }, function(error, response, body) {
-         res = responseF(error, response, body, "Lesnoe");
-         callback(null, res);
-      });
-    },
-    function(callback) {
-      // Get forecast data from Windguru
-      request({
-        url: url3,
-        gzip: true
-      }, function (error, response, body) {
-        var res = 'No data from Windguru';
-        if (!error && response.statusCode === 200) {
-          res = parseWindguruData(body);
-        }
-        callback(null, res);
-      });
-    },
-    function(callback) {
-      // Get weather data from MSW Zelenogradsk
-      request({
-        url: url4
-      }, function(error, response, body) {
-        var res = 'No data from MSW';
-        if (!error && response.statusCode === 200) {
-          res = parseMSWData(body);
-        }
-        callback(null, res);
-      });
-    }
-  ], function (err, results) {
-    // Output all results
-    for (var i = 0; i < results.length; i++) {
-      console.log(results[i]);
-    }
-  });
-}
-
-async.during(
-  // Check if we have an online connection
-  function (callback) {
-    isOnline(function(err, online) {
-      callback(err, !online);
-    });
-  },
-  // Wait 3 seconds
-  function (callback) {
-    setTimeout(callback, 3000);
-  },
-  // We have a connection
-  function (err) {
-    getData();
-  }
-);
 
 var testJSONLoad = function() {
   var path = require('path');
