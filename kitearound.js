@@ -97,7 +97,7 @@ var parseBody = function(body, station_name) {
   // Wind direction
   var dir_arrow = arrowFromDirection(body.wind_arrow, wind_knots);
   // Temperature
-  var last_temp = body.temp_avg[body.temp_avg.length - 1][1];
+  var last_temp = Math.round(body.temp_avg[body.temp_avg.length - 2][1]);
   // Online or not?
   if (station_name == 'Kitebeach') {
     var online_status = body.kitebeach_online;
@@ -110,7 +110,7 @@ var parseBody = function(body, station_name) {
     res += dir_arrow + wind_knots + online_text_toolbar + '\n';
     res += '---\n'
   }
-  res += station_name+' '+dir_arrow + wind_knots + ' knots '+last_temp+' °C '+online_text + '\n';
+  res += station_name+' '+dir_arrow + wind_knots + ' knots, '+last_temp+' °C '+online_text + '\n';
   if (station_name != 'Kitebeach') {
     res += 'Kite4you.ru meteo stations|href=http://kite4you.ru/windguru/online/meteostations.php' + '\n';
     res += '---' + '\n';
