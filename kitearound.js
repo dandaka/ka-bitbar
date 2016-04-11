@@ -90,8 +90,9 @@ var getData = function() {
 
 var parseBody = function(body, station_name) {
   var res = '';
-  // Wind speed avg in knots
-  var last_wind = body.wind_avg[body.wind_avg.length - 1][1];
+  // Wind speed last average in meters, convert to knots
+  // Last value is momentary (not average), so we take 2nd last
+  var last_wind = body.wind_avg[body.wind_avg.length - 2][1];
   var wind_knots = Math.round(last_wind * 1.94384);
   // Wind direction
   var dir_arrow = arrowFromDirection(body.wind_arrow, wind_knots);
