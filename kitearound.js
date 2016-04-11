@@ -169,7 +169,7 @@ var findPeaksWindGuru = function(windguru_json) {
 
 var rainStrFromPercipation = function(percipation) {
   var rainstr = '';
-  if (percipation > 0.2 && percipation < 1.5) {
+  if (percipation > 0.2) {
     rainstr += ', '+percipation + ' mm/3h';
   }
   return rainstr;
