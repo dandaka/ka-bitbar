@@ -8,6 +8,7 @@ var url = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=kitebe
 var url2 = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=lesnoe';
 var url3 = 'https://beta.windguru.cz/258786';
 var url4 = 'http://magicseaweed.com/Zelenogradsk-Surf-Report/4518/';
+var urlWindguruGo = 'https://beta.windguru.cz/?set=138877';
 
 var ARROWS = ['↓', '↙', '←', '↖', '↑', '↗', '→', '↘',  '↓'];
 var WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -88,7 +89,7 @@ var getData = function() {
   });
 }
 
-var parseBody = function(body, station_name) {
+var parseKite4you = function(body, station_name) {
   var res = '';
   // Wind speed last average in meters, convert to knots
   // Last value is momentary (not average), so we take 2nd last
@@ -120,11 +121,11 @@ var parseBody = function(body, station_name) {
 
 var responseF = function (error, response, body, station_name) {
   if (!error && response.statusCode === 200) {
-    return parseBody(body, station_name);
+    return parseKite4you(body, station_name);
   } else {
     return 'Error';
   }
-};
+}
 
 var parseWindguruData = function(body) {
   $ = cheerio.load(body);
@@ -164,7 +165,7 @@ var findPeaksWindGuru = function(windguru_json) {
       res += weekday+' '+time+' '+arrow+' '+wind+" "+temp+rainstr+' '+cloudStr+'\n';
     }
   }
-  res += 'Kitebeach WindGuru forecast|href=https://beta.windguru.cz/258786\n'
+  res += 'Kitebeach WindGuru forecast|href='+urlWindguruGo+'\n';
   return res;
 }
 
