@@ -9,6 +9,7 @@ var url2 = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=lesno
 var url3 = 'https://beta.windguru.cz/258786';
 var url4 = 'http://magicseaweed.com/Zelenogradsk-Surf-Report/4518/';
 var urlWindguruGo = 'https://beta.windguru.cz/?set=138877';
+var svenceleWindStation = 'https://beta.windguru.cz/station/316';
 
 var ARROWS = ['↓', '↙', '←', '↖', '↑', '↗', '→', '↘',  '↓'];
 var WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -42,7 +43,9 @@ var getData = function() {
         url: url,
         json: true
       }, function(error, response, body) {
-        res = responseF(error, response, body, "Kitebeach");
+        if (!error && response.statusCode === 200) {
+          res = responseF(error, response, body, "Kitebeach");
+        }
         callback(null, res);
       });
     },
@@ -52,7 +55,21 @@ var getData = function() {
         url: url2,
         json: true
       }, function(error, response, body) {
-        res = responseF(error, response, body, "Lesnoe");
+        if (!error && response.statusCode === 200) {
+          res = responseF(error, response, body, "Lesnoe");
+        }
+        callback(null, res);
+      });
+    },
+    function(callback) {
+      // Get station data from Windguru / Svencele
+      request({
+        url: svenceleWindStation,
+        json: true
+      }, function(error, response, body) {
+      	if (!error && response.statusCode === 200) {
+        	res = parseWindguruStation(body);
+        }
         callback(null, res);
       });
     },
@@ -132,6 +149,11 @@ var parseWindguruData = function(body) {
   var windguru_json_str = $('.spot-live-div').next('script').text().split('\n')[0].replace('var wg_fcst_tab_data_1 = ', '').slice(0, -1);
   var windguru_json = JSON.parse(windguru_json_str);
   return findPeaksWindGuru(windguru_json);
+}
+
+var parseWindguruStation = function(body) {
+  res = 'no data from Svencele';
+  return res;
 }
 
 var findPeaksWindGuru = function(windguru_json) {
