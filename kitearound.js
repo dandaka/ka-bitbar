@@ -10,6 +10,7 @@ var url3 = 'https://beta.windguru.cz/258786';
 var url4 = 'http://magicseaweed.com/Zelenogradsk-Surf-Report/4518/';
 var urlWindguruGo = 'https://beta.windguru.cz/?set=138877';
 var svenceleWindStation = 'https://beta.windguru.cz/station/316';
+var urlZelenogradskCam = 'http://cammeteo.ru/cam27';
 
 var ARROWS = ['↓', '↙', '←', '↖', '↑', '↗', '→', '↘',  '↓'];
 var WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -131,6 +132,7 @@ var parseKite4you = function(body, station_name) {
   res += station_name+' '+dir_arrow + wind_knots + ' knots, '+last_temp+' °C '+online_text + '\n';
   if (station_name != 'Kitebeach') {
     res += 'Kite4you.ru meteo stations|href=http://kite4you.ru/windguru/online/meteostations.php' + '\n';
+    res += 'Zelenogradsk beach web camera|href=' + urlZelenogradskCam + '\n';
     res += '---' + '\n';
   }
   return res;
