@@ -10,7 +10,7 @@ var url3 = 'https://beta.windguru.cz/258786';
 var url4 = 'http://magicseaweed.com/Zelenogradsk-Surf-Report/4518/';
 var urlWindguruGo = 'https://beta.windguru.cz/?set=138877';
 var svenceleWindStation = 'https://beta.windguru.cz/station/316';
-var urlZelenogradskCam = 'http://cammeteo.ru/cam27';
+var urlZelenogradskCam = 'http://109.239.208.82/zelcam1/embed.html';
 
 var ARROWS = ['↓', '↙', '←', '↖', '↑', '↗', '→', '↘',  '↓'];
 var WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
