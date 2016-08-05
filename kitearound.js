@@ -3,6 +3,7 @@ var request = require('request');
 var cheerio = require('cheerio');
 var dateFormat = require('dateformat');
 var isOnline = require('is-online');
+// var config = require('config');
 
 var url = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=kitebeach';
 var url2 = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=lesnoe';
@@ -11,6 +12,7 @@ var url4 = 'http://magicseaweed.com/Zelenogradsk-Surf-Report/4518/';
 var urlWindguruGo = 'https://beta.windguru.cz/?set=138877';
 var urlZelenogradskCam = 'http://kgd.ru/traffic/camera/18-zelenogradsk-plyazh';
 var urlLesnoeCam = 'http://217.168.64.38:8090/webcam.swf';
+var windguruStationApi = 'https://www.windguru.cz/int/wgsapi.php';
 
 var ARROWS = ['↓', '↙', '←', '↖', '↑', '↗', '→', '↘',  '↓'];
 var WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -99,7 +101,11 @@ var parseKite4you = function(body, station_name) {
   var res = '';
   // Wind speed last average in meters, convert to knots
   // Last value is momentary (not average), so we take 2nd last
-  var last_wind = body.wind_avg[body.wind_avg.length - 2][1];
+  if(body.wind_avg !== undefined) {
+    var last_wind = body.wind_avg[body.wind_avg.length - 2][1];
+  } else {
+    return 'K4Y is down\n---\n';
+  }
   var wind_knots = Math.round(last_wind * 1.94384);
   // Wind direction
   var dir_arrow = arrowFromDirection(body.wind_arrow, wind_knots);
