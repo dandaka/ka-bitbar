@@ -20,3 +20,4 @@ Simple script, that shows Kaliningrad weather station from Baltic bay and foreca
 * Sort both WindGuru and MSW forecasts in one array
 * Maybe add to MSW data from WindGuru. Maybe mix both data arrays first?
 * Do we need .sh script to run a node script for BitBar?
+* Add second arrow https://www.npmjs.com/package/windrose
