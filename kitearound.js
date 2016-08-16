@@ -237,7 +237,11 @@ var findPeaksMSW = function(json) {
 var parseMSWData = function(body) {
   $ = cheerio.load(body);
   var msw_json = $('#msw-js-fcc').data('chartdata');
-  return findPeaksMSW(msw_json);
+  if (msw_json != undefined) {
+    return findPeaksMSW(msw_json);
+  } else {
+    return "MSW parse failed :(";
+  }
 }
 
 var dateFromTimeStamp = function(timeStamp) {
