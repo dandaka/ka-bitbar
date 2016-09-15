@@ -5,8 +5,9 @@ var dateFormat = require('dateformat');
 var isOnline = require('is-online');
 // var config = require('config');
 
-var url = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=kitebeach';
-var url2 = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=lesnoe';
+var urlMeteoKB = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=kitebeach';
+var urlMeteoLesnoe = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=lesnoe';
+var urlMeteoBaltiysk = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=baltiysk';
 var url3 = 'https://beta.windguru.cz/258786';
 var url4 = 'http://magicseaweed.com/Zelenogradsk-Surf-Report/4518/';
 var urlWindguruGo = 'https://beta.windguru.cz/?set=138877';
@@ -43,7 +44,7 @@ var getData = function() {
     function(callback) {
       // Get weather data from Kite4you: Kitebeach
       request({
-        url: url,
+        url: urlMeteoKB,
         json: true
       }, function(error, response, body) {
         if (!error && response.statusCode === 200) {
@@ -55,11 +56,23 @@ var getData = function() {
     function(callback) {
       // Get weather data from Kite4you: Lesnoe
       request({
-        url: url2,
+        url: urlMeteoLesnoe,
         json: true
       }, function(error, response, body) {
         if (!error && response.statusCode === 200) {
           res = responseF(error, response, body, "Lesnoe");
+        }
+        callback(null, res);
+      });
+    },
+    function(callback) {
+      // Get weather data from Kite4you: Baltiysk
+      request({
+        url: urlMeteoBaltiysk,
+        json: true
+      }, function(error, response, body) {
+        if (!error && response.statusCode === 200) {
+          res = responseF(error, response, body, "Baltiysk");
         }
         callback(null, res);
       });
@@ -124,8 +137,9 @@ var parseKite4you = function(body, station_name) {
     res += '---\n'
   }
   res += station_name+' '+dir_arrow + wind_knots + ' knots, '+last_temp+' °C '+online_text + '\n';
-  if (station_name != 'Kitebeach') {
+  if (station_name == 'Baltiysk') {
     res += 'Kite4you.ru meteo stations|href=http://kite4you.ru/windguru/online/meteostations.php' + '\n';
+    res += 'Baltiysk meteo station|href=https://beta.windguru.cz/station/686' + '\n';
     res += 'Zelenogradsk beach web camera|href=' + urlZelenogradskCam + '\n';
     res += 'Lesnoe beach web camera|href=' + urlLesnoeCam + '\n';
     res += '---' + '\n';
