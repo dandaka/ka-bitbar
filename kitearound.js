@@ -12,7 +12,7 @@ var url3 = 'https://beta.windguru.cz/258786';
 var url4 = 'http://magicseaweed.com/Zelenogradsk-Surf-Report/4518/';
 var urlWindguruGo = 'https://beta.windguru.cz/?set=138877';
 var urlZelenogradskCam = 'http://kgd.ru/traffic/camera/18-zelenogradsk-plyazh';
-var urlLesnoeCam = 'http://217.168.64.38:8090/webcam.swf';
+var urlLesnoeCam = 'http://cammeteo.ru/cam31';
 var windguruStationApi = 'https://www.windguru.cz/int/wgsapi.php';
 
 var ARROWS = ['↓', '↙', '←', '↖', '↑', '↗', '→', '↘',  '↓'];
