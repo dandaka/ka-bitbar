@@ -2,7 +2,7 @@
 
 Simple script, that shows Kaliningrad weather station from Baltic bay and forecast from Windguru.
 
-![KA BitBar plugin](https://cloud.githubusercontent.com/assets/2384694/14348686/8234f2cc-fcbe-11e5-87ed-317d8c28b3cd.jpg)
+![KA BitBar plugin](https://cloud.githubusercontent.com/assets/2384694/25352337/0415bd4a-292c-11e7-950a-66a07c115532.png)
 
 ## Install ##
 
