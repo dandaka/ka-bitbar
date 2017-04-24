@@ -4,6 +4,7 @@ var cheerio = require('cheerio');
 var dateFormat = require('dateformat');
 var isOnline = require('is-online');
 // var config = require('config');
+var fs = require('fs');
 
 var urlMeteoKB = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=kitebeach';
 var urlMeteoLesnoe = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=lesnoe';
@@ -158,8 +159,12 @@ var responseF = function (error, response, body, station_name) {
 var parseWindguruData = function(body) {
   $ = cheerio.load(body);
   var windguru_json_str = $('.spot-live-div').next('script').text().split('\n')[0].replace('var wg_fcst_tab_data_1 = ', '').slice(0, -1);
-  var windguru_json = JSON.parse(windguru_json_str);
-  return findPeaksWindGuru(windguru_json);
+  if (windguru_json_str != '') {
+    var windguru_json = JSON.parse(windguru_json_str);
+    return findPeaksWindGuru(windguru_json);
+  } else {
+    return 'WindGuru parse error';
+  }
 }
 
 var findPeaksWindGuru = function(windguru_json) {
