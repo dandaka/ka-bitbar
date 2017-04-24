@@ -158,7 +158,7 @@ var responseF = function (error, response, body, station_name) {
 
 var parseWindguruData = function(body) {
   $ = cheerio.load(body);
-  var windguru_json_str = $('.spot-live-div').next('script').text().split('\n')[0].replace('var wg_fcst_tab_data_1 = ', '').slice(0, -1);
+  var windguru_json_str = $('.obal-wrap script').text().split('\n')[0].replace('var wg_fcst_tab_data_1 = ', '').slice(0, -1);
   if (windguru_json_str != '') {
     var windguru_json = JSON.parse(windguru_json_str);
     return findPeaksWindGuru(windguru_json);
