@@ -15,6 +15,7 @@ var urlWindguruGo = 'https://beta.windguru.cz/?set=138877';
 var urlZelenogradskCam = 'http://kgd.ru/traffic/camera/18-zelenogradsk-plyazh';
 var urlLesnoeCam = 'http://cammeteo.ru/cam31';
 var windguruStationApi = 'https://www.windguru.cz/int/wgsapi.php';
+var svenceleStation = 'https://beta.windguru.cz/station/316';
 
 var ARROWS = ['↓', '↙', '←', '↖', '↑', '↗', '→', '↘',  '↓'];
 var WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
