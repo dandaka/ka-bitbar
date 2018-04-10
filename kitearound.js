@@ -68,18 +68,18 @@ var getData = function() {
         callback(null, res);
       });
     },
-    function(callback) {
-      // Get weather data from Kite4you: Baltiysk
-      request({
-        url: urlMeteoBaltiysk,
-        json: true
-      }, function(error, response, body) {
-        if (!error && response.statusCode === 200) {
-          res = responseF(error, response, body, "Baltiysk");
-        }
-        callback(null, res);
-      });
-    },
+    // function(callback) {
+    //   // Get weather data from Kite4you: Baltiysk
+    //   request({
+    //     url: urlMeteoBaltiysk,
+    //     json: true
+    //   }, function(error, response, body) {
+    //     if (!error && response.statusCode === 200) {
+    //       res = responseF(error, response, body, "Baltiysk");
+    //     }
+    //     callback(null, res);
+    //   });
+    // },
     function(callback) {
       // Get forecast data from Windguru
       request({
