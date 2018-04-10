@@ -3,13 +3,11 @@ var request = require('request');
 var cheerio = require('cheerio');
 var dateFormat = require('dateformat');
 var isOnline = require('is-online');
-// var config = require('config');
 var fs = require('fs');
 
 var urlMeteoKB = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=kitebeach';
 var urlMeteoLesnoe = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=lesnoe';
 var urlMeteoBaltiysk = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=baltiysk';
-var urlWindguruZelenogradsk = 'https://www.windguru.cz/124096';
 var urlWGZelenogradskJSON = 'http://www.windguru.cz/int/widget_json.php?callback=jQuery183014162597187889658_1523358123268&url=file%3A%2F%2F%2FUsers%2Fdandaka%2Fprojects%2Fka-bitbar%2Fwidget.html&hostname=&s=124096&m=3&lng=en&_=1523358123301';
 var url4 = 'http://magicseaweed.com/Zelenogradsk-Surf-Report/4518/';
 var urlWindguruGo = 'https://beta.windguru.cz/?set=138877';
