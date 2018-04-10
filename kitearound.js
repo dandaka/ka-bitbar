@@ -9,7 +9,8 @@ var fs = require('fs');
 var urlMeteoKB = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=kitebeach';
 var urlMeteoLesnoe = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=lesnoe';
 var urlMeteoBaltiysk = 'http://kite4you.ru/windguru/online/weather_getdata_json.php?db=baltiysk';
-var url3 = 'https://beta.windguru.cz/258786';
+var urlWindguruZelenogradsk = 'https://www.windguru.cz/124096';
+var urlWGZelenogradskJSON = 'http://www.windguru.cz/int/widget_json.php?callback=jQuery183014162597187889658_1523358123268&url=file%3A%2F%2F%2FUsers%2Fdandaka%2Fprojects%2Fka-bitbar%2Fwidget.html&hostname=&s=124096&m=3&lng=en&_=1523358123301';
 var url4 = 'http://magicseaweed.com/Zelenogradsk-Surf-Report/4518/';
 var urlWindguruGo = 'https://beta.windguru.cz/?set=138877';
 var urlZelenogradskCam = 'http://kgd.ru/traffic/camera/18-zelenogradsk-plyazh';
@@ -82,12 +83,13 @@ var getData = function() {
     function(callback) {
       // Get forecast data from Windguru
       request({
-        url: url3,
+        url: urlWGZelenogradskJSON,
         gzip: true
       }, function (error, response, body) {
         var res = 'No data from Windguru';
         if (!error && response.statusCode === 200) {
-          res = parseWindguruData(body);
+          // res = parseWindguruData(body);
+          res = parseWindguruJSON(body);
         }
         callback(null, res);
       });
@@ -144,6 +146,8 @@ var parseKite4you = function(body, station_name) {
     res += 'Baltiysk meteo station|href=https://beta.windguru.cz/station/686' + '\n';
     res += 'Zelenogradsk beach web camera|href=' + urlZelenogradskCam + '\n';
     res += 'Lesnoe beach web camera|href=' + urlLesnoeCam + '\n';
+    res += 'Kitebeach WindGuru forecast|href='+urlWindguruGo+'\n';
+    res += 'Zelenogradsk MSW forecast|href=http://magicseaweed.com/Zelenogradsk-Surf-Report/4518/\n';
     res += '---' + '\n';
   }
   return res;
@@ -157,9 +161,10 @@ var responseF = function (error, response, body, station_name) {
   }
 }
 
-var parseWindguruData = function(body) {
-  $ = cheerio.load(body);
-  var windguru_json_str = $('.obal-wrap script').text().split('\n')[0].replace('var wg_fcst_tab_data_1 = ', '').slice(0, -1);
+var parseWindguruJSON = function(body) {
+  var firstBracket = body.indexOf('(') + 1;
+  var lastBracket = body.length - 1;
+  var windguru_json_str = body.substring(firstBracket, lastBracket);
   if (windguru_json_str != '') {
     var windguru_json = JSON.parse(windguru_json_str);
     return findPeaksWindGuru(windguru_json);
@@ -171,35 +176,42 @@ var parseWindguruData = function(body) {
 var findPeaksWindGuru = function(windguru_json) {
   var wspd, wspd_next, wspd_prev;
   var res = '';
-  for (var i = 1; i < windguru_json.fcst[3].WINDSPD.length - 1; i++) {
-    // Throw out all forecasts after 5 days, because it's unreliable
-    if (windguru_json.fcst[3].hours [i] >= 5*24) {
-      break;
-    }
-    wspd = windguru_json.fcst[3].WINDSPD[i];
-    wspd_next = windguru_json.fcst[3].WINDSPD[i+1];
-    wspd_prev = windguru_json.fcst[3].WINDSPD[i-1];
+  var forecastData = windguru_json.fcst.fcst[3];
+
+  for (var i = 1; i < forecastData.WINDSPD.length - 1; i++) {
+    wspd = forecastData.WINDSPD[i];
+    wspd_next = forecastData.WINDSPD[i+1];
+    wspd_prev = forecastData.WINDSPD[i-1];
+
     if(wspd >= PEAK_MIN && wspd >= wspd_next && wspd >= wspd_prev) {
       peaksTime.push(i);
-      var temp = Math.round(windguru_json.fcst[3].TMP[i])+"°C";
-      var gust = Math.round(windguru_json.fcst[3].GUST[i]);
+      var temp = Math.round(forecastData.TMP[i])+"°C";
+      var gust = Math.round(forecastData.GUST[i]);
       var wind = Math.round(wspd)+"–"+gust+" knots,";
-      var weekday = WEEKDAYS[windguru_json.fcst[3].hr_weekday[i]];
-      var time;
-      // Correct time for 1h (Kaliningrad is 1 hour behind Moscow)
-      if (windguru_json.fcst[3].hr_h[i] == "00") {
-        time = "23:00";
+      if (forecastData.hr_weekday[i] != undefined) {
+        var weekday = WEEKDAYS[forecastData.hr_weekday[i]];
       } else {
-        time = (Number(windguru_json.fcst[3].hr_h[i]) - 1) + ':00';
+        var weekday = '?';
       }
-      var percp = windguru_json.fcst[3].APCP[i];
+
+      var time;
+      if (forecastData.hr_h[i] != undefined) {
+        // Correct time for 1h (Kaliningrad is 1 hour behind Moscow)
+        if (forecastData.hr_h[i] == "00") {
+          time = "23:00";
+        } else {
+          time = (Number(forecastData.hr_h[i]) - 1) + ':00';
+        }
+      } else {
+        time = '?'
+      }
+      var percp = forecastData.APCP[i];
       var rainstr = rainStrFromPercipation(percp);
-      var arrow = arrowFromDirection(windguru_json.fcst[3].WINDDIR[i], wspd);
-      var cloudStr = cloudStrFromCover(windguru_json.fcst[3].HCDC[i], windguru_json.fcst[3].MCDC[i], windguru_json.fcst[3].LCDC[i]);
+      var arrow = arrowFromDirection(forecastData.WINDDIR[i], wspd);
+      var cloudStr = cloudStrFromCover(forecastData.HCDC[i], forecastData.MCDC[i], forecastData.LCDC[i]);
       res += weekday+' '+time+' '+arrow+' '+wind+" "+temp+rainstr+' '+cloudStr+'\n';
     }
   }
-  res += 'Kitebeach WindGuru forecast|href='+urlWindguruGo+'\n';
   return res;
 }
 
@@ -251,7 +263,6 @@ var findPeaksMSW = function(json) {
       res += date + ", " + wh + " m waves\n";
     }
   }
-  res += 'Zelenogradsk MSW forecast|href=http://magicseaweed.com/Zelenogradsk-Surf-Report/4518/\n';
   return res;
 }
 var parseMSWData = function(body) {
