@@ -111,6 +111,7 @@ var getData = function() {
     for (var i = 0; i < results.length; i++) {
       console.log(results[i]);
     }
+    console.log(staticLinks());
   });
 }
 
@@ -141,15 +142,7 @@ var parseKite4you = function(body, station_name) {
     res += '---\n'
   }
   res += station_name+' '+dir_arrow + wind_knots + ' knots, '+last_temp+' °C '+online_text + '\n';
-  if (station_name == 'Baltiysk') {
-    res += 'Kite4you.ru meteo stations|href=http://kite4you.ru/windguru/online/meteostations.php' + '\n';
-    res += 'Baltiysk meteo station|href=https://beta.windguru.cz/station/686' + '\n';
-    res += 'Zelenogradsk beach web camera|href=' + urlZelenogradskCam + '\n';
-    res += 'Lesnoe beach web camera|href=' + urlLesnoeCam + '\n';
-    res += 'Kitebeach WindGuru forecast|href='+urlWindguruGo+'\n';
-    res += 'Zelenogradsk MSW forecast|href=http://magicseaweed.com/Zelenogradsk-Surf-Report/4518/\n';
-    res += '---' + '\n';
-  }
+  res += '---\n';
   return res;
 }
 
@@ -212,6 +205,7 @@ var findPeaksWindGuru = function(windguru_json) {
       res += weekday+' '+time+' '+arrow+' '+wind+" "+temp+rainstr+' '+cloudStr+'\n';
     }
   }
+  res += '---\n';
   return res;
 }
 
@@ -286,4 +280,16 @@ var testJSONLoad = function() {
   var f = require('fs').readFileSync(filename, 'utf8');
   var jsontest = JSON.parse(f);
   parseBody(jsontest);
+}
+
+var staticLinks = function() {
+  var res;
+  res = 'Kite4you.ru meteo stations|href=http://kite4you.ru/windguru/online/meteostations.php' + '\n';
+  res += 'Baltiysk meteo station|href=https://beta.windguru.cz/station/686' + '\n';
+  res += 'Zelenogradsk beach web camera|href=' + urlZelenogradskCam + '\n';
+  res += 'Lesnoe beach web camera|href=' + urlLesnoeCam + '\n';
+  res += 'Kitebeach WindGuru forecast|href='+urlWindguruGo+'\n';
+  res += 'Zelenogradsk MSW forecast|href=http://magicseaweed.com/Zelenogradsk-Surf-Report/4518/\n';
+  res += '---' + '\n';
+  return res;
 }
